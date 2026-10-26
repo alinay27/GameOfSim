@@ -7,13 +7,11 @@ def makeVertices():
     vertices = []
     for i in range(6):
         angle = math.pi / 3 * i
-        x = 400 + 250 * math.cos(math.radians(angle * i))
-        y = 400 + 250 * math.sin(math.radians(angle * i))
+        x = screen_width / 2 + 250 * math.cos(angle)
+        y = screen_height / 2 + 250 * math.sin(angle)
 
         vertices.append((x, y))
     return vertices
-
-v1, v2, v3, v4, v5, v6 = makeVertices()
 
 class SimGame(arcade.Window):
     def __init__(self):
@@ -23,12 +21,15 @@ class SimGame(arcade.Window):
 
     def on_draw(self):
         self.clear()
+        for i, start in enumerate(self.vertices):
+            for end in self.vertices[i + 1:]:
+                arcade.draw_line(*start, *end, arcade.color.GRAY, 2)
         for x, y in self.vertices:
             arcade.draw_circle_filled(x, y, 10, arcade.color.BLACK)
 
-self = SimGame()
-running = True
-while running:
-    self.on_draw()
-    arcade.finish_render()
-    arcade.pause(0.01)
+def main():
+    window = SimGame()
+    arcade.run()
+if __name__ == "__main__":
+    main()
+
