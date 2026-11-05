@@ -43,25 +43,51 @@ class SimGame(arcade.Window):
 
         if self.game_over:
             arcade.draw_text(self.winner_message, screen_width/2, 730, arcade.color.RED, 24, anchor_x = "center")
+
         else:
             if self.turn == 1:
-                message = "Player 1 (RED)"
+                self.message = "Player 1 (RED)"
+            elif self.bot_mode:
+                self.message = "Bot (BLUE)"
             else:
-                message = "Player 2 (BLUE)"
-            arcade.draw_text(message, screen_width/2, 730, arcade.color.BLACK, 20, anchor_x= "center")
-        arcade.draw_text("Click two dots to draw a line", screen_width/2, 50, arcade.color.BLACK, 16, anchor_x="center")
+                self.message = "Player 2 (BLUE)"
+            arcade.draw_text(self.message, screen_width/2, 730, arcade.color.BLACK, 20, anchor_x= "center")
+            
+        arcade.draw_text("B: Bot    P: Two Players    R: Restart", screen_width/2, 50, arcade.color.BLACK, 16, anchor_x= "center")
 
     def makes_triangle(self, edge, edges):
         a, b = edge
         for c in range(6):
             if c != a and c != b:
-                edge1 = tuple(sorted(a,c))
-                edge2 = tuple(sorted(b,c))
+                edge1 = tuple(sorted((a,c)))
+                edge2 = tuple(sorted((b,c)))
                 if edge1 in edges and edge2 in edges:
                     return True
         return False
-    def on_update(self, delta_time):
-        pass
+
+    def bot_move(self): #bot chooses a line randomly
+        open_edges = []
+        safe_edges = []
+
+        for i in range(6):
+            for j in range(i + 1, 6):
+                edge = (i, j)
+                if edge not in self.red_edges and edge not in self.blue_edges:
+                    open_edges.append(edge)
+                    if not self.makes_triangle(edge, self.blue_edges):
+                        safe_edges.append(edge)
+            if len(safe_edges) > 0:
+                edge = random.choice(safe_edges)
+            elif len(open_edges) >0:
+                edge = random.choice(safe_edges)
+            else:
+                return
+            self.blue_edges.add(edge)
+            if self.makes_triangle(edge, self.blue_edges):
+                self.game_over = True
+                self.winner_message = "Bot Loses! Player 1 Wins!"
+            else:
+                self.turn = 1
     
     def on_mouse_press(self, x, y, button, modifiers):
         if button != arcade.MOUSE_BUTTON_LEFT or self.game_over:
@@ -90,17 +116,39 @@ class SimGame(arcade.Window):
             self.red_edges.add(edge)
             if self.makes_triangle(edge, self.red_edges):
                 self.game_over = True
-                self.winner_message = "Player 1 Loses! Player 2 Wins!"
+                if self.bot_mode:
+                    self.winner_message = "Player 1 Loses! Bot Wins!"
+                else:
+                    self.winner_message = "Player 1 Loses! Player 2 Wins!"
             else:
                 self.turn = 2
-        else:
+                if self.bot_mode:
+                    self.bot_move()
+        elif not self.bot_mode:
             self.blue_edges.add(edge)
             if self.makes_triangle(edge, self.blue_edges):
                 self.game_over = True
-                self.winner_message = "Player 1 Loses! Player 2 Wins!"
+                self.winner_message = "Player 2 Loses! Player 1 Wins!"
             else:
                 self.turn = 1
-        
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.B:
+            self.bot_mode = True
+            self.restart()
+        elif key == arcade.key.P:
+            self.bot_mode = False
+            self.restart()
+        elif key == arcade.key.R:
+            self.restart()
+
+    def restart(self):
+        self.red_edges.clear()
+        self.blue_edges.clear()
+        self.turn = 1
+        self.selected_dot = None
+        self.game_over = False
+        self.winner_message = ""
 def main():
     window = SimGame()
     arcade.run()
