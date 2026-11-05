@@ -50,7 +50,7 @@ class SimGame(arcade.Window):
                 message = "Player 2 (BLUE)"
             arcade.draw_text(message, screen_width/2, 730, arcade.color.BLACK, 20, anchor_x= "center")
         arcade.draw_text("Click two dots to draw a line", screen_width/2, 50, arcade.color.BLACK, 16, anchor_x="center")
-        
+
     def makes_triangle(self, edge, edges):
         a, b = edge
         for c in range(6):
@@ -66,51 +66,39 @@ class SimGame(arcade.Window):
     def on_mouse_press(self, x, y, button, modifiers):
         if button != arcade.MOUSE_BUTTON_LEFT or self.game_over:
             return
-        #Dots cover the endpoints, so only clicks on visible lines count
-        for vx, vy in self.vertices:
+        clicked_dot = None
+        for i, (vx, vy) in enumerate(self.vertices):
             if math.hypot(x-vx, y-vy) <= 12:
-                return
+                clicked_dot = i
+                break
+        if clicked_dot is None:
+            return
 
-        closest_edge = None
-        closest_distance = 15
+        if self.selected_dot is None:
+            self.selected_dot = clicked_dot
+            return
+        if self.selected_dot == clicked_dot:
+            self.selected_dot = None
+            return
+        edge = tuple(sorted((self.selected_dot, clicked_dot)))
+        self.selected_dot = None
 
-        for i in range(6):
-            for j in range(i+1, 6):
-                if (i, j) in self.red_edges:
-                    continue
-                if (i, j) in self.blue_edges:
-                    continue
-                x1, y1 = self.vertices[i]
-                x2, y2 = self.vertices[j]
-                dx = x2 - x1
-                dy = y2 - y1
-
-                click = ((x - x1) * dx + (y-y1) * dy) / (dx*dx + dy*dy)
-                closest_x = x1 + click * dx
-                closest_y = y1 + click * dy
-                distance = math.hypot(x - closest_x, y - closest_y)
-                if distance < closest_distance:
-                    closest_distance = distance
-                    closest_edge = (i, j)
-                
-        if closest_edge is not None:
-            if self.turn == 1:
-                self.red_edges.add(closest_edge)
-                if self.makes_triangle(closest_edge, self.red_edges):
-                    self.game_over = True
-                    self.winner_message = "Player 1 Loses! Player 2 Wins!"
+        if edge in self.red_edges or edge in self.blue_edges:
+            return
+        
+        if self.turn == 1:
+            self.red_edges.add(edge)
+            if self.makes_triangle(edge, self.red_edges):
+                self.game_over = True
+                self.winner_message = "Player 1 Loses! Player 2 Wins!"
+            else:
                 self.turn = 2
-
-                if self.bot_mode and not self.game_over:
-                    self.bot_move()
-                else:
-                    self.turn = 2
-
-            elif not self.bot_mode:
-                self.blue_edges.add(closest_edge)
-                if self.makes_triangle(closest_edge, self.blue_edges):
-                    self.game_over = True
-                    self.winner_message = "Player 2 Loses! Player 1 Wins!"
+        else:
+            self.blue_edges.add(edge)
+            if self.makes_triangle(edge, self.blue_edges):
+                self.game_over = True
+                self.winner_message = "Player 1 Loses! Player 2 Wins!"
+            else:
                 self.turn = 1
         
 def main():
