@@ -66,6 +66,8 @@ class SimGame(arcade.Window):
         return False
 
     def bot_move(self): #bot chooses a line randomly
+        if self.game_over or self.turn != 2:
+            return
         open_edges = []
         safe_edges = []
 
@@ -76,18 +78,18 @@ class SimGame(arcade.Window):
                     open_edges.append(edge)
                     if not self.makes_triangle(edge, self.blue_edges):
                         safe_edges.append(edge)
-            if len(safe_edges) > 0:
-                edge = random.choice(safe_edges)
-            elif len(open_edges) >0:
-                edge = random.choice(safe_edges)
-            else:
-                return
-            self.blue_edges.add(edge)
-            if self.makes_triangle(edge, self.blue_edges):
-                self.game_over = True
-                self.winner_message = "Bot Loses! Player 1 Wins!"
-            else:
-                self.turn = 1
+        if len(safe_edges) > 0:
+            edge = random.choice(safe_edges)
+        elif len(open_edges) >0:
+            edge = random.choice(open_edges)
+        else:
+            return
+        self.blue_edges.add(edge)
+        if self.makes_triangle(edge, self.blue_edges):
+            self.game_over = True
+            self.winner_message = "Bot Loses! Player 1 Wins!"
+        else:
+            self.turn = 1
     
     def on_mouse_press(self, x, y, button, modifiers):
         if button != arcade.MOUSE_BUTTON_LEFT or self.game_over:
@@ -127,7 +129,7 @@ class SimGame(arcade.Window):
         elif not self.bot_mode:
             self.blue_edges.add(edge)
             if self.makes_triangle(edge, self.blue_edges):
-                self.game_over = True
+                self.gamef_over = True
                 self.winner_message = "Player 2 Loses! Player 1 Wins!"
             else:
                 self.turn = 1
