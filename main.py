@@ -27,6 +27,10 @@ class SimGame(arcade.Window):
         self.winner_message = ""
         self.turn = 1
         self.selected_dot = None
+        self.winner_text = arcade.Text("", screen_width / 2, 730, arcade.color.RED, 24, anchor_x="center")
+        self.turn_text = arcade.Text("", screen_width / 2, 730, arcade.color.BLACK, 20, anchor_x="center")
+        self.controls_text = arcade.Text("B: Bot    P: Two Players    R: Restart",
+                                          screen_width / 2, 50, arcade.color.BLACK, 16, anchor_x="center",)
 
     def on_draw(self):
         self.clear()
@@ -42,8 +46,9 @@ class SimGame(arcade.Window):
             arcade.draw_circle_filled(x, y, 12, arcade.color.BLACK)
 
         if self.game_over:
-            arcade.draw_text(self.winner_message, screen_width/2, 730, arcade.color.RED, 24, anchor_x = "center")
-
+            if self.winner_text.text != self.winner_message:
+                self.winner_text.text = self.winner_message
+            self.winner_text.draw()
         else:
             if self.turn == 1:
                 self.message = "Player 1 (RED)"
@@ -51,9 +56,11 @@ class SimGame(arcade.Window):
                 self.message = "Bot (BLUE)"
             else:
                 self.message = "Player 2 (BLUE)"
-            arcade.draw_text(self.message, screen_width/2, 730, arcade.color.BLACK, 20, anchor_x= "center")
-            
-        arcade.draw_text("B: Bot    P: Two Players    R: Restart", screen_width/2, 50, arcade.color.BLACK, 16, anchor_x= "center")
+            if self.turn_text.text != self.message:
+                self.turn_text.text = self.message
+            self.turn_text.draw()
+
+        self.controls_text.draw()
 
     def makes_triangle(self, edge, edges):
         a, b = edge
