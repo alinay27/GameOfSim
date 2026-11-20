@@ -180,11 +180,9 @@ class SimGame(arcade.Window):
         self.game_over = False
         self.winner_message = ""
 
-
 def main():
     window = SimGame()
     arcade.run()
-
 
 if __name__ == "__main__":
     main()
