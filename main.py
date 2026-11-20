@@ -1,8 +1,10 @@
 import random
 import arcade
 import math
+
 screen_width = 800
 screen_height = 800
+
 
 def makeVertices():
     vertices = []
@@ -12,6 +14,7 @@ def makeVertices():
         y = screen_height / 2 + 250 * math.sin(angle)
         vertices.append((x, y))
     return vertices
+
 
 class SimGame(arcade.Window):
     def __init__(self):
@@ -27,10 +30,20 @@ class SimGame(arcade.Window):
         self.winner_message = ""
         self.turn = 1
         self.selected_dot = None
-        self.winner_text = arcade.Text("", screen_width / 2, 730, arcade.color.RED, 24, anchor_x="center")
-        self.turn_text = arcade.Text("", screen_width / 2, 730, arcade.color.BLACK, 20, anchor_x="center")
-        self.controls_text = arcade.Text("B: Bot    P: Two Players    R: Restart",
-                                          screen_width / 2, 50, arcade.color.BLACK, 16, anchor_x="center",)
+        self.winner_text = arcade.Text(
+            "", screen_width / 2, 730, arcade.color.RED, 24, anchor_x="center"
+        )
+        self.turn_text = arcade.Text(
+            "", screen_width / 2, 730, arcade.color.BLACK, 20, anchor_x="center"
+        )
+        self.controls_text = arcade.Text(
+            "B: Bot    P: Two Players    R: Restart",
+            screen_width / 2,
+            50,
+            arcade.color.BLACK,
+            16,
+            anchor_x="center",
+        )
 
     def on_draw(self):
         self.clear()
@@ -66,13 +79,13 @@ class SimGame(arcade.Window):
         a, b = edge
         for c in range(6):
             if c != a and c != b:
-                edge1 = tuple(sorted((a,c)))
-                edge2 = tuple(sorted((b,c)))
+                edge1 = tuple(sorted((a, c)))
+                edge2 = tuple(sorted((b, c)))
                 if edge1 in edges and edge2 in edges:
                     return True
         return False
 
-    def bot_move(self): #bot chooses a line randomly
+    def bot_move(self):  # bot chooses a line randomly
         if self.game_over or self.turn != 2:
             return
         open_edges = []
@@ -87,7 +100,7 @@ class SimGame(arcade.Window):
                         safe_edges.append(edge)
         if len(safe_edges) > 0:
             edge = random.choice(safe_edges)
-        elif len(open_edges) >0:
+        elif len(open_edges) > 0:
             edge = random.choice(open_edges)
         else:
             return
@@ -97,13 +110,13 @@ class SimGame(arcade.Window):
             self.winner_message = "Bot Loses! Player 1 Wins!"
         else:
             self.turn = 1
-    
+
     def on_mouse_press(self, x, y, button, modifiers):
         if button != arcade.MOUSE_BUTTON_LEFT or self.game_over:
             return
         clicked_dot = None
         for i, (vx, vy) in enumerate(self.vertices):
-            if math.hypot(x-vx, y-vy) <= 12:
+            if math.hypot(x - vx, y - vy) <= 12:
                 clicked_dot = i
                 break
         if clicked_dot is None:
@@ -120,7 +133,7 @@ class SimGame(arcade.Window):
 
         if edge in self.red_edges or edge in self.blue_edges:
             return
-        
+
         if self.turn == 1:
             self.red_edges.add(edge)
             if self.makes_triangle(edge, self.red_edges):
@@ -158,9 +171,12 @@ class SimGame(arcade.Window):
         self.selected_dot = None
         self.game_over = False
         self.winner_message = ""
+
+
 def main():
     window = SimGame()
     arcade.run()
+
+
 if __name__ == "__main__":
     main()
-
