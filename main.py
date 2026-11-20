@@ -36,13 +36,15 @@ class SimGame(arcade.Window):
         self.turn_text = arcade.Text(
             "", screen_width / 2, 730, arcade.color.BLACK, 20, anchor_x="center"
         )
-        self.controls_text = arcade.Text(
-            "B: Bot    P: Two Players    R: Restart",
-            screen_width / 2,
-            50,
-            arcade.color.BLACK,
-            16,
-            anchor_x="center",
+        self.bot_control = arcade.Text(
+            "B: Bot", screen_width / 2 - 150, 50, arcade.color.BLACK, 16, anchor_x="center"
+        )
+        self.two_player_control = arcade.Text(
+            "P: Two Players", screen_width / 2, 50, arcade.color.BLUE, 16,
+            anchor_x="center", bold=True,
+        )
+        self.restart_control = arcade.Text(
+            "R: Restart", screen_width / 2 + 150, 50, arcade.color.BLACK, 16, anchor_x="center"
         )
 
     def on_draw(self):
@@ -56,7 +58,10 @@ class SimGame(arcade.Window):
             end = self.vertices[j]
             arcade.draw_line(*start, *end, self.line_color2, 3)
         for i, (x, y) in enumerate(self.vertices):
-            arcade.draw_circle_filled(x, y, 12, arcade.color.BLACK)
+            dot_color = arcade.color.BLACK
+            if i == self.selected_dot:
+                dot_color = self.line_color1 if self.turn == 1 else self.line_color2
+            arcade.draw_circle_filled(x, y, 12, dot_color)
 
         if self.game_over:
             if self.winner_text.text != self.winner_message:
@@ -73,7 +78,9 @@ class SimGame(arcade.Window):
                 self.turn_text.text = self.message
             self.turn_text.draw()
 
-        self.controls_text.draw()
+        self.bot_control.draw()
+        self.two_player_control.draw()
+        self.restart_control.draw()
 
     def makes_triangle(self, edge, edges):
         a, b = edge
@@ -149,17 +156,18 @@ class SimGame(arcade.Window):
         elif not self.bot_mode:
             self.blue_edges.add(edge)
             if self.makes_triangle(edge, self.blue_edges):
-                self.gamef_over = True
+                self.game_over = True
                 self.winner_message = "Player 2 Loses! Player 1 Wins!"
             else:
                 self.turn = 1
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.B:
-            self.bot_mode = True
-            self.restart()
-        elif key == arcade.key.P:
-            self.bot_mode = False
+        if key in (arcade.key.B, arcade.key.P):
+            self.bot_mode = key == arcade.key.B
+            self.bot_control.color = arcade.color.BLUE if self.bot_mode else arcade.color.BLACK
+            self.two_player_control.color = arcade.color.BLACK if self.bot_mode else arcade.color.BLUE
+            self.bot_control.bold = self.bot_mode
+            self.two_player_control.bold = not self.bot_mode
             self.restart()
         elif key == arcade.key.R:
             self.restart()
